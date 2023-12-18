@@ -1,7 +1,6 @@
 package gelbooru.parser;
 
-/*
- * Java Gelbooru.com Tags Parser
+/* Java Gelbooru.com Tags Parser
  * Allows to parse tags from post on Gelbooru.com
  */
 

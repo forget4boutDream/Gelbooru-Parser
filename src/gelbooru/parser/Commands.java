@@ -26,7 +26,7 @@ public class Commands {
 	public static void help() {
 		System.out.println("Commands:");
 		System.out.println("> help");
-		System.out.println("> get - get tags from post");
+		System.out.println("> get [id] - get tags from post with [id] on Gelbooru.com");
 		System.out.println("> show - show saved keys with tags in source.json");
 		System.out.println("> l [key] [id] - [key] for tags, [id] on Gelbooru.com");
 		System.out.println("> rm [key] - remove [key] from source.json");
