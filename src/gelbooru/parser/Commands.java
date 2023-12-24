@@ -32,6 +32,13 @@ public class Commands {
 		System.out.println("> rm [key] - remove [key] from source.json");
 		System.out.println("> exit");
 	}
+	
+	public static void idHelp() {
+		System.out.println(": id -link [id or key]");
+		System.out.println(": id -help");
+		System.out.println(": id [id]");
+		
+	}
 
 	// ------- Commands -------
 
@@ -64,6 +71,14 @@ public class Commands {
 
 		terminate();
 	}
+	
+	public static int getID(String key) throws IOException {
+		init();
+		JSONObject content = jo.optJSONObject(key);
+		int id = content.getInt("id");
+		terminate();
+		return id;
+	}
 
 	// ------- Private -------
 
@@ -92,5 +107,14 @@ public class Commands {
 		writer.write("{}");
 		writer.flush();
 		writer.close();
+	}
+	
+	public static boolean isInt(String str) {
+		try {
+			Integer.parseInt(str);
+			return true;
+		} catch(Exception e) {
+		}
+		return false;
 	}
 }
