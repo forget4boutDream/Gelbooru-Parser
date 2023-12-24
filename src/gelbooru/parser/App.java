@@ -5,25 +5,29 @@ package gelbooru.parser;
  */
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.Scanner;
 
 public class App {
 
-	public final static String VERSION = "1.1dev";
+	public final static String VERSION = "v1.2";
 
 	final static File src = new File("source.json");
-	final static String link = "https://gelbooru.com/index.php?page=post&s=view&id=";
+	final static String ApiLink = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1";
+	final static String ApiLinkID = ApiLink + "&id=";
+	final static String PostLinkID = "https://gelbooru.com/index.php?page=post&s=view&id=";
 
-	public static void main(String[] args) throws IOException {
-		Commands.about();
-		if (!src.exists())
-			Commands.createFile();
+	public static void main(String[] args) {
+
+		Command.about();
+		if (!src.exists()) {
+			Assets.createFile();
+		}
+
 		CLI();
 	}
 
-	private static void CLI() throws IOException {
+	private static void CLI() {
 		Scanner scanner = new Scanner(System.in);
 		boolean exit = false;
 
@@ -31,49 +35,53 @@ public class App {
 			System.out.print("> ");
 			String[] command = scanner.nextLine().split(" ");
 
-			long start = System.nanoTime();
-
 			switch (command[0]) {
-			case "help" -> Commands.help();
-			case "get" -> Parser.getTags(Integer.parseInt(command[1]));
-
-			case "show" -> Commands.show();
+			case "help" -> Command.help();
+			case "show" -> Command.show();
+			case "rm" -> Command.remove(command[1]);
+			case "get" -> {
+				try {
+					Parser.getTags(Integer.parseInt(command[1]));
+				} catch (NumberFormatException e) {
+					System.out.println("[ ERROR ] Incorrect post ID");
+				}
+			}
+			// Load
 			case "l" -> {
-				Commands.load(command[1], Integer.parseInt(command[2]));
-			}
-			case "id" -> {
-				switch (command[1]) {
-				case "-link" -> {
-					if (Commands.isInt(command[2]))
-						System.out.println(link + command[2]);
-					else
-						System.out.println(link + Commands.getID(command[2]));
-				}
-				case "-help" -> Commands.idHelp();
-				default -> System.out.println(Commands.getID(command[1]));
+				try {
+					Command.load(command[1], Integer.parseInt(command[2]));
+				} catch (NumberFormatException e) {
+					System.out.println("[ ERROR ] Invalid ID");
+				} catch (ArrayIndexOutOfBoundsException e) {
+					System.out.println("[ ERROR ] No enough arguments");
 				}
 			}
 
-			case "visit" -> {
-				if (Commands.isInt(command[1])) {
-					@SuppressWarnings("deprecation")
-					URL url = new URL("https://gelbooru.com/index.php?page=post&s=view&id=" + command[1]);
-					TotallyNotBorrowedCodeFromStackOverFlow.openWebpage(url);
+			// Get Link
+			case "link" -> {
+				if (Assets.isInt(command[1])) {
+					System.out.println(ApiLinkID + command[1]);
 				} else {
-					@SuppressWarnings("deprecation")
-					URL url = new URL(
-							"https://gelbooru.com/index.php?page=post&s=view&id=" + Commands.getID(command[1]));
-					TotallyNotBorrowedCodeFromStackOverFlow.openWebpage(url);
+					System.out.println(ApiLinkID + Command.getID(command[1]));
 				}
 			}
 
-			case "rm" -> {
-				String key = scanner.next();
-				Commands.remove(key);
+			// Visit Link
+			case "visit" -> {
+				try {
+					if (Assets.isInt(command[1])) {
+						Browser.openWebpage(new URI(PostLinkID + command[1]));
+					} else {
+						Browser.openWebpage(new URI(PostLinkID + Command.getID(command[1])));
+					}
+				} catch (ArrayIndexOutOfBoundsException e) {
+					System.out.println("[ ERROR ] No enough arguments");
+				} catch (Exception e) {
+					System.out.println("[ ERROR ] An error occured " + e);
+				}
 			}
 			case "exit" -> exit = true;
 			}
-			System.out.println("[ TIME ]: " + (System.nanoTime() - start) / 1000 + " microsecs");
 		}
 		scanner.close();
 	}

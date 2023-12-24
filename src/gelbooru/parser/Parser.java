@@ -2,6 +2,7 @@ package gelbooru.parser;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.Scanner;
 
@@ -10,37 +11,45 @@ import org.json.JSONObject;
 
 public class Parser {
 
-	private static String getData(URL url) throws IOException {
-		String inline = "";
-		Scanner sc = new Scanner(url.openStream());
-		while (sc.hasNext()) {
-			inline += sc.nextLine();
+	private static String getData(URL url) {
+		try (Scanner sc = new Scanner(url.openStream())) {
+			String inline = "";
+			while (sc.hasNext()) {
+				inline += sc.nextLine();
+			}
+			sc.close();
+			return inline;
+		} catch (IOException e) {
+			System.err.println("[ PARSER ] An error occured: " + e);
 		}
-		sc.close();
-		return inline;
+		return null;
 	}
 
-	public static String getTags(int id) throws IOException {
-		@SuppressWarnings("deprecation")
-		URL url = new URL("https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&id=" + id);
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		con.setRequestMethod("GET");
-		con.connect();
+	public static String getTags(int id) {
+		try {
+			URI uri = new URI(App.ApiLink + "&id=" + id);
+			URL url = uri.toURL(); // new URL(link) is deprecated
 
-		System.out.println("Response code: " + con.getResponseCode());
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setRequestMethod("GET");
+			con.connect();
 
-		System.out.println("\nJSON data in string format");
-		String data = getData(url);
-		System.out.println(data);
+			System.out.println("Response code: " + con.getResponseCode());
 
-		JSONObject jo = new JSONObject(data);
-		JSONArray ja = new JSONArray(jo.getJSONArray("post"));
-		JSONObject post = ja.getJSONObject(0);
-		String tags = post.getString("tags");
+			String data = getData(url);
 
-		System.out.println("\nTags:");
-		System.out.println(tags);
+			JSONObject jo = new JSONObject(data);
+			JSONArray ja = new JSONArray(jo.getJSONArray("post"));
+			JSONObject post = ja.getJSONObject(0);
+			String tags = post.getString("tags");
 
-		return tags;
+			System.out.println("\nTags:");
+			System.out.println(tags);
+
+			return tags;
+		} catch (Exception e) {
+			System.out.println(e);
+			return "";
+		}
 	}
 }
