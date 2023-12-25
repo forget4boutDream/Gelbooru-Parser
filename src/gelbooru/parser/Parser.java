@@ -27,7 +27,7 @@ public class Parser {
 
 	public static String getTags(int id) {
 		try {
-			URI uri = new URI(App.ApiLink + "&id=" + id);
+			URI uri = new URI(App.ApiLinkID + id);
 			URL url = uri.toURL(); // new URL(link) is deprecated
 
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -49,7 +49,7 @@ public class Parser {
 			return tags;
 		} catch (Exception e) {
 			System.out.println(e);
-			return "";
+			return null;
 		}
 	}
 }
