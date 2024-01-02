@@ -1,8 +1,12 @@
 package gelbooru.parser;
 
+import java.io.BufferedInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.json.JSONObject;
 
@@ -17,8 +21,8 @@ public class Command {
 	// ------- Help Commands -------
 
 	public static void about() {
-		System.out.println("Java Gelbooru.com Parser " + App.VERSION + "\n"
-				+ "Allows to parse tags from post on Gelbooru.com");
+		System.out.println(
+				"Java Gelbooru.com Parser " + App.VERSION + "\n" + "Allows to parse tags from post on Gelbooru.com");
 	}
 
 	public static void help() {
@@ -35,13 +39,9 @@ public class Command {
 	// ------- Commands -------
 
 	public static void show() {
-		try {
-			init();
-			System.out.println(jo.keySet());
-			terminate();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		init();
+		System.out.println(jo.keySet());
+		terminate();
 	}
 
 	public static void load(String key, int id) {
@@ -89,23 +89,52 @@ public class Command {
 		}
 	}
 
-	// ------- Private -------
+	public static String download(int id, String name) {
 
-	private static void init() throws IOException {
-		reader = new FileReader(App.src);
-		writer = new FileWriter(App.src, true);
-
-		int d = reader.read();
-		while (d != -1) {
-			data += (char) d;
-			d = reader.read();
+		try (BufferedInputStream in = new BufferedInputStream(
+				new URI(Parser.getImage(id)).toURL().openStream());
+				FileOutputStream fileOutputStream = new FileOutputStream(name + ".png")) {
+			byte dataBuffer[] = new byte[1024];
+			int bytesRead;
+			while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
+				fileOutputStream.write(dataBuffer, 0, bytesRead);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
 		}
-		jo = new JSONObject(data);
+		return null;
 	}
 
-	private static void terminate() throws IOException {
-		reader.close();
-		writer.flush();
-		writer.close();
+	// ------- Private -------
+
+	private static void init() {
+		try {
+			reader = new FileReader(App.src);
+			writer = new FileWriter(App.src, true);
+
+			int d = reader.read();
+			while (d != -1) {
+				data += (char) d;
+				d = reader.read();
+			}
+			jo = new JSONObject(data);
+		} catch (IOException e) {
+			System.err.println("[ ERROR ] Can't init");
+			e.printStackTrace();
+		}
+
+	}
+
+	private static void terminate() {
+		try {
+			reader.close();
+			writer.flush();
+			writer.close();
+		} catch (IOException e) {
+			System.err.println("[ ERROR ] Can't terminate");
+			e.printStackTrace();
+		}
 	}
 }

@@ -10,12 +10,12 @@ import java.util.Scanner;
 
 public class App {
 
-	public final static String VERSION = "v1.2";
+	public static final String VERSION = "v1.3dev";
 
-	final static File src = new File("source.json");
-	final static String ApiLink = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1";
-	final static String ApiLinkID = ApiLink + "&id=";
-	final static String PostLinkID = "https://gelbooru.com/index.php?page=post&s=view&id=";
+	static final File src = new File("source.json");
+	static final String ApiLink = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1";
+	static final String ApiLinkID = ApiLink + "&id=";
+	static final String PostLinkID = "https://gelbooru.com/index.php?page=post&s=view&id=";
 
 	public static void main(String[] args) {
 
@@ -75,11 +75,26 @@ public class App {
 						Browser.openWebpage(new URI(PostLinkID + Command.getID(command[1])));
 					}
 				} catch (ArrayIndexOutOfBoundsException e) {
-					System.out.println("[ ERROR ] No enough arguments");
+					System.err.println("[ ERROR ] No enough arguments");
 				} catch (Exception e) {
-					System.out.println("[ ERROR ] An error occured " + e);
+					System.err.println("[ ERROR ] An error occured " + e);
 				}
 			}
+			case "dwn" -> {
+				try {
+					Command.download(Integer.parseInt(command[1]), command[2]);
+					System.out.println("downloaded");
+					
+					Command.load(command[1], Integer.parseInt(command[2]));
+				} catch (NumberFormatException e) {
+					System.err.println("[ ERROR ] Invalid ID");
+				} catch (ArrayIndexOutOfBoundsException e) {
+					System.err.println("[ ERROR ] No enough arguments");
+				} catch (Exception e) {
+					System.err.println("[ ERROR ] An error occured " + e);
+				}
+			}
+
 			case "exit" -> exit = true;
 			}
 		}

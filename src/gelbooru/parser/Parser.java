@@ -2,6 +2,7 @@ package gelbooru.parser;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Scanner;
@@ -10,8 +11,19 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class Parser {
+	
+	// ------- Get Data -------
+	
+	public static String getData(URI uri) {
+		try {
+			return getData(uri.toURL());
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
-	private static String getData(URL url) {
+	public static String getData(URL url) {
 		try (Scanner sc = new Scanner(url.openStream())) {
 			String inline = "";
 			while (sc.hasNext()) {
@@ -24,11 +36,35 @@ public class Parser {
 		}
 		return null;
 	}
+	
+	// ------- Parser -------
+	
+	public static String getImage(int id) {
+		try {
+			URL url = new URI(App.ApiLinkID + id).toURL();
+
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setRequestMethod("GET");
+			con.connect();
+
+			String data = getData(url);
+
+			JSONObject jo = new JSONObject(data);
+			JSONArray ja = new JSONArray(jo.getJSONArray("post"));
+			JSONObject post = ja.getJSONObject(0);
+
+			String file_url = post.getString("file_url");
+			return file_url;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 
 	public static String getTags(int id) {
 		try {
-			URI uri = new URI(App.ApiLinkID + id);
-			URL url = uri.toURL(); // new URL(link) is deprecated
+			URL url = new URI(App.ApiLinkID + id).toURL();
 
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setRequestMethod("GET");
@@ -48,7 +84,7 @@ public class Parser {
 
 			return tags;
 		} catch (Exception e) {
-			System.out.println(e);
+			e.printStackTrace();
 			return null;
 		}
 	}

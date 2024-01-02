@@ -24,4 +24,5 @@ public class Assets {
 			return false;
 		}
 	}
+
 }

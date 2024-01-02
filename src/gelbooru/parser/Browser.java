@@ -5,6 +5,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+// Totally not borrowed code from StackOverFlow
+
 public class Browser {
 
 	public static boolean openWebpage(URI uri) {
