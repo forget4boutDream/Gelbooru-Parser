@@ -6,10 +6,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.json.JSONObject;
 
+/**
+ * Commands used in App.java
+ */
 public class Command {
 
 	static FileReader reader;
@@ -33,6 +35,7 @@ public class Command {
 		System.out.println("rm [key] - remove a key from source.json");
 		System.out.println("link [id/key] - get link with id or key in source.json");
 		System.out.println("visit [id/key] - visit link using a default browser");
+		System.out.println("dwn [id] [file name] - download image and save tags");
 		System.out.println("exit");
 	}
 
@@ -89,26 +92,33 @@ public class Command {
 		}
 	}
 
-	public static String download(int id, String name) {
+	/**
+	 * Downloads image from "api_link" field in API
+	 * 
+	 * @param id   - Post ID
+	 * @param name - File name for image to be saved
+	 * 
+	 * Image will be saved with ".png" extension
+	 */
+	public static void download(int id, String name) {
 
-		try (BufferedInputStream in = new BufferedInputStream(
-				new URI(Parser.getImage(id)).toURL().openStream());
+		try (BufferedInputStream in = new BufferedInputStream(new URI(Parser.getImage(id)).toURL().openStream());
 				FileOutputStream fileOutputStream = new FileOutputStream(name + ".png")) {
 			byte dataBuffer[] = new byte[1024];
 			int bytesRead;
 			while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
 				fileOutputStream.write(dataBuffer, 0, bytesRead);
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (URISyntaxException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return null;
 	}
 
 	// ------- Private -------
 
+	/**
+	 * Init FileReader, FileWriter and JSONObject
+	 */
 	private static void init() {
 		try {
 			reader = new FileReader(App.src);
@@ -127,6 +137,9 @@ public class Command {
 
 	}
 
+	/**
+	 * Close FileReader and FileWriter
+	 */
 	private static void terminate() {
 		try {
 			reader.close();

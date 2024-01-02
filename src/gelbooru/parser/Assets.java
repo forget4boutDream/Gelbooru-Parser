@@ -15,14 +15,14 @@ public class Assets {
 			e.printStackTrace();
 		}
 	}
-
+	
+	/**
+	 * @return boolean is String an int value
+	 * @param str - String value that will be checked
+	 * 
+	 * New version @since v1.3
+	 */
 	public static boolean isInt(String str) {
-		try {
-			Integer.parseInt(str);
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
+		return str.matches("-?\\d+");
 	}
-
 }

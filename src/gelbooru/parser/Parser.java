@@ -10,19 +10,34 @@ import java.util.Scanner;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+/**
+ * @Parser works with API
+ * Methods returning some data from API
+ */
+
 public class Parser {
 	
 	// ------- Get Data -------
 	
+	/**
+	 * Converts URI to URL and call getData(URL url) method
+	 * @param URI that will be converted to URL
+	 * @return String API JSON data
+	 */
 	public static String getData(URI uri) {
 		try {
 			return getData(uri.toURL());
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
+			return null;
 		}
-		return null;
 	}
-
+	
+	/**
+	 * Reads all data on API page
+	 * @param URL url - API page's URL
+	 * @return String API JSON data
+	 */
 	public static String getData(URL url) {
 		try (Scanner sc = new Scanner(url.openStream())) {
 			String inline = "";
@@ -33,12 +48,18 @@ public class Parser {
 			return inline;
 		} catch (IOException e) {
 			System.err.println("[ PARSER ] An error occured: " + e);
+			return null;
 		}
-		return null;
 	}
 	
 	// ------- Parser -------
 	
+	/**
+	 * Get the "file_url" field from API
+	 * 
+	 * @param id - post ID
+	 * @return String URL with the image
+	 */
 	public static String getImage(int id) {
 		try {
 			URL url = new URI(App.ApiLinkID + id).toURL();
@@ -61,7 +82,13 @@ public class Parser {
 			return null;
 		}
 	}
-
+	
+	/**
+	 * Get post's tags from API
+	 * 
+	 * @param id - post ID
+	 * @return String line of tags, separated with space
+	 */
 	public static String getTags(int id) {
 		try {
 			URL url = new URI(App.ApiLinkID + id).toURL();

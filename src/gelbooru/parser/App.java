@@ -1,7 +1,9 @@
 package gelbooru.parser;
 
-/* Java Gelbooru.com Tags Parser
- * Allows to parse tags from post on Gelbooru.com
+/**
+ * Java Gelbooru.com Parser
+ * Allows download images with saving tags and id
+ * in source.json file
  */
 
 import java.io.File;
@@ -10,7 +12,7 @@ import java.util.Scanner;
 
 public class App {
 
-	public static final String VERSION = "v1.3dev";
+	public static final String VERSION = "v1.3";
 
 	static final File src = new File("source.json");
 	static final String ApiLink = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1";
@@ -85,7 +87,7 @@ public class App {
 					Command.download(Integer.parseInt(command[1]), command[2]);
 					System.out.println("downloaded");
 					
-					Command.load(command[1], Integer.parseInt(command[2]));
+					Command.load(command[2], Integer.parseInt(command[1]));
 				} catch (NumberFormatException e) {
 					System.err.println("[ ERROR ] Invalid ID");
 				} catch (ArrayIndexOutOfBoundsException e) {
