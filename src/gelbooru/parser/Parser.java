@@ -12,9 +12,8 @@ import org.json.JSONObject;
 
 /**
  * @Parser works with API
- * Methods returning some data from API
+ * Methods return some data from API
  */
-
 public class Parser {
 	
 	// ------- Get Data -------
@@ -22,7 +21,7 @@ public class Parser {
 	/**
 	 * Converts URI to URL and call getData(URL url) method
 	 * @param URI that will be converted to URL
-	 * @return String API JSON data
+	 * @return String, API JSON data
 	 */
 	public static String getData(URI uri) {
 		try {
@@ -36,7 +35,7 @@ public class Parser {
 	/**
 	 * Reads all data on API page
 	 * @param URL url - API page's URL
-	 * @return String API JSON data
+	 * @return String, API JSON data
 	 */
 	public static String getData(URL url) {
 		try (Scanner sc = new Scanner(url.openStream())) {
@@ -47,7 +46,7 @@ public class Parser {
 			sc.close();
 			return inline;
 		} catch (IOException e) {
-			System.err.println("[ PARSER ] An error occured: " + e);
+			PrintErr.parserDefaultErr(e);
 			return null;
 		}
 	}
@@ -58,7 +57,7 @@ public class Parser {
 	 * Get the "file_url" field from API
 	 * 
 	 * @param id - post ID
-	 * @return String URL with the image
+	 * @return String, URL with the image
 	 */
 	public static String getImage(int id) {
 		try {
@@ -87,7 +86,7 @@ public class Parser {
 	 * Get post's tags from API
 	 * 
 	 * @param id - post ID
-	 * @return String line of tags, separated with space
+	 * @return String, line of tags, separated with space
 	 */
 	public static String getTags(int id) {
 		try {

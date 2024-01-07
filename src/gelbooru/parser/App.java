@@ -2,17 +2,32 @@ package gelbooru.parser;
 
 /**
  * Java Gelbooru.com Parser
- * Allows download images with saving tags and id
- * in source.json file
+ * 
+ * Allows to download image from Gelbooru
+ * with saving tags and id in source.json
  */
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
+
+// Issues:
+// [+] >link gives API link
+// [+] >visit doesnt work on linux
+// [+] data updates only after restart
+
+// New:
+// added merge command
+// added conflict warning and flag to overwrite
+// added clear src file command
+// added >path command
 
 public class App {
 
-	public static final String VERSION = "v1.3";
+	public static final String VERSION = "v1.4dev";
 
 	static final File src = new File("source.json");
 	static final String ApiLink = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1";
@@ -35,69 +50,100 @@ public class App {
 
 		while (!exit) {
 			System.out.print("> ");
-			String[] command = scanner.nextLine().split(" ");
 
-			switch (command[0]) {
+			List<String> command = new ArrayList<>(Arrays.asList(scanner.nextLine().split(" ")));
+
+			switch (command.get(0)) {
 			case "help" -> Command.help();
 			case "show" -> Command.show();
-			case "rm" -> Command.remove(command[1]);
+			case "rm" -> Command.remove(command.get(1));
+			case "clear" -> Assets.createFile(); // It does the same thing lmao
+			case "path" -> Command.path();
 			case "get" -> {
 				try {
-					Parser.getTags(Integer.parseInt(command[1]));
+					Parser.getTags(Integer.parseInt(command.get(1)));
 				} catch (NumberFormatException e) {
-					System.out.println("[ ERROR ] Incorrect post ID");
+					PrintErr.incorrectPostID();
 				}
 			}
+
 			// Load
 			case "l" -> {
 				try {
-					Command.load(command[1], Integer.parseInt(command[2]));
+					if (command.size() <= 2) {
+						PrintErr.noEnoughArgs();
+						break;
+					}
+					Command.load(command.get(1), Integer.parseInt(command.get(2)), command.contains("-w"));
+
 				} catch (NumberFormatException e) {
-					System.out.println("[ ERROR ] Invalid ID");
-				} catch (ArrayIndexOutOfBoundsException e) {
-					System.out.println("[ ERROR ] No enough arguments");
+					PrintErr.incorrectPostID();
 				}
 			}
 
 			// Get Link
 			case "link" -> {
-				if (Assets.isInt(command[1])) {
-					System.out.println(ApiLinkID + command[1]);
+				if (Assets.isInt(command.get(1))) {
+					System.out.println(PostLinkID + command.get(1));
 				} else {
-					System.out.println(ApiLinkID + Command.getID(command[1]));
+					System.out.println(PostLinkID + Command.getID(command.get(1)));
 				}
 			}
 
 			// Visit Link
 			case "visit" -> {
 				try {
-					if (Assets.isInt(command[1])) {
-						Browser.openWebpage(new URI(PostLinkID + command[1]));
+					if (Assets.isInt(command.get(1))) {
+						Browser.openWebpage(new URI(PostLinkID + command.get(1)));
 					} else {
-						Browser.openWebpage(new URI(PostLinkID + Command.getID(command[1])));
+						Browser.openWebpage(new URI(PostLinkID + Command.getID(command.get(1))));
 					}
 				} catch (ArrayIndexOutOfBoundsException e) {
-					System.err.println("[ ERROR ] No enough arguments");
+					PrintErr.noEnoughArgs();
 				} catch (Exception e) {
-					System.err.println("[ ERROR ] An error occured " + e);
+					PrintErr.defaultErr(e);
 				}
 			}
+
+			// Download image
 			case "dwn" -> {
 				try {
-					Command.download(Integer.parseInt(command[1]), command[2]);
-					System.out.println("downloaded");
-					
-					Command.load(command[2], Integer.parseInt(command[1]));
+					if (command.size() <= 2) {
+						PrintErr.noEnoughArgs();
+					}
+					Command.download(Integer.parseInt(command.get(1)), command.get(2));
+					System.out.println("Downloaded.");
+
+					Command.load(command.get(2), Integer.parseInt(command.get(1)), false);
 				} catch (NumberFormatException e) {
-					System.err.println("[ ERROR ] Invalid ID");
-				} catch (ArrayIndexOutOfBoundsException e) {
-					System.err.println("[ ERROR ] No enough arguments");
+					PrintErr.incorrectPostID();
 				} catch (Exception e) {
-					System.err.println("[ ERROR ] An error occured " + e);
+					PrintErr.defaultErr(e);
+				}
+			}
+
+			// Merge
+			case "merge" -> {
+				try {
+					if (command.size() <= 2) {
+						PrintErr.noEnoughArgs();
+						break;
+					}
+					if (!command.contains("-ignore") && !command.contains("-m")) {
+						command.add(null);
+					}
+					
+					Command.merge(command.get(1), command.get(2), 
+							command.get(3), command.get(4));
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 
 			case "exit" -> exit = true;
+			default -> {
+				System.out.println("wrong command, type >help for commands");
+			}
 			}
 		}
 		scanner.close();

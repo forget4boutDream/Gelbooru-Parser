@@ -6,7 +6,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 // Totally not borrowed code from StackOverFlow
-
 public class Browser {
 
 	public static boolean openWebpage(URI uri) {
@@ -15,6 +14,13 @@ public class Browser {
 			try {
 				desktop.browse(uri);
 				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else if (desktop != null
+				&& System.getProperty("os.name").toLowerCase().contains("linux")) {
+			try {
+				Runtime.getRuntime().exec(new String[] { "xdg-open", uri.toString() });
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
