@@ -20,7 +20,7 @@ import java.util.Scanner;
 // [+] data updates only after restart
 
 // New:
-// added merge command
+// added merge command [BETA]
 // added conflict warning and flag to overwrite
 // added clear src file command
 // added >path command
@@ -35,23 +35,25 @@ public class App {
 	static final String PostLinkID = "https://gelbooru.com/index.php?page=post&s=view&id=";
 
 	public static void main(String[] args) {
-
+		
+		List<String> command = new ArrayList<>(Arrays.asList(args));
+		
 		Command.about();
 		if (!src.exists()) {
 			Assets.createFile();
 		}
 
-		CLI();
+		CLI(command);
 	}
 
-	private static void CLI() {
-		Scanner scanner = new Scanner(System.in);
-		boolean exit = false;
+	private static void CLI(List<String> command) {
+		//Scanner scanner = new Scanner(System.in);
+		//boolean exit = false;
 
-		while (!exit) {
-			System.out.print("> ");
+		//while (!exit) {
+			//System.out.print("> ");
 
-			List<String> command = new ArrayList<>(Arrays.asList(scanner.nextLine().split(" ")));
+			//List<String> command = new ArrayList<>(Arrays.asList(scanner.nextLine().split(" ")));
 
 			switch (command.get(0)) {
 			case "help" -> Command.help();
@@ -140,12 +142,12 @@ public class App {
 				}
 			}
 
-			case "exit" -> exit = true;
+			//case "exit" -> exit = true;
 			default -> {
 				System.out.println("wrong command, type >help for commands");
 			}
 			}
-		}
-		scanner.close();
+		//}
+		//scanner.close();
 	}
 }
