@@ -2,31 +2,153 @@ package gelbooru.parser;
 
 /**
  * Java Gelbooru.com Parser
- * Allows download images with saving tags and id
- * in source.json file
+ * 
+ * Allows to download image from Gelbooru
+ * with saving tags and id in source.json
  */
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
+/*
+ Issues:
+ [+] >link gives API link
+ [+] >visit doesnt work on linux
+ [+] data updates only after restart
+
+ New:
+ added merge command [BETA]
+ added conflict warning and flag to overwrite
+ added clear src file command
+ added >path command
+*/
 public class App {
 
-	public static final String VERSION = "v1.3";
+	public static final String VERSION = "v1.4";
 
-	static final File src = new File("source.json");
+	static final File data = new File("data.json");
 	static final String ApiLink = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1";
 	static final String ApiLinkID = ApiLink + "&id=";
 	static final String PostLinkID = "https://gelbooru.com/index.php?page=post&s=view&id=";
 
 	public static void main(String[] args) {
 
+		// Set args from IDE
+
+		//String cm = "help";
+		//args = cm.split(" ");
+		// Comment ^^ lines to run without args
+
 		Command.about();
-		if (!src.exists()) {
+		if (!data.exists()) {
 			Assets.createFile();
 		}
 
-		CLI();
+		if (args.length > 0) {
+			List<String> command = new ArrayList<>(Arrays.asList(args));
+			proc(command);
+		} else {
+			CLI();
+		}
+
+	}
+
+	private static void proc(List<String> command) {
+		switch (command.get(0)) {
+		case "help" -> Command.help();
+		case "show" -> Command.show();
+		case "rm" -> Command.remove(command.get(1));
+		case "clear" -> Assets.createFile(); // It does the same thing lmao
+		case "path" -> Command.path();
+		case "get" -> {
+			try {
+				Parser.getTags(Integer.parseInt(command.get(1)));
+			} catch (NumberFormatException e) {
+				PrintErr.incorrectPostID();
+			}
+		}
+
+		// Load
+		case "l" -> {
+			try {
+				if (command.size() <= 2) {
+					PrintErr.noEnoughArgs();
+					break;
+				}
+				Command.load(command.get(1), Integer.parseInt(command.get(2)), command.contains("-w"));
+
+			} catch (NumberFormatException e) {
+				PrintErr.incorrectPostID();
+			}
+		}
+
+		// Get Link
+		case "link" -> {
+			if (Assets.isInt(command.get(1))) {
+				System.out.println(PostLinkID + command.get(1));
+			} else {
+				System.out.println(PostLinkID + Command.getID(command.get(1)));
+			}
+		}
+
+		// Visit Link
+		case "visit" -> {
+			try {
+				if (Assets.isInt(command.get(1))) {
+					Browser.openWebpage(new URI(PostLinkID + command.get(1)));
+				} else {
+					Browser.openWebpage(new URI(PostLinkID + Command.getID(command.get(1))));
+				}
+			} catch (ArrayIndexOutOfBoundsException e) {
+				PrintErr.noEnoughArgs();
+			} catch (Exception e) {
+				PrintErr.defaultErr(e);
+			}
+		}
+
+		// Download image
+		case "dwn" -> {
+			try {
+				if (command.size() <= 2) {
+					PrintErr.noEnoughArgs();
+				}
+				Command.download(Integer.parseInt(command.get(1)), command.get(2));
+				System.out.println("Downloaded.");
+
+				Command.load(command.get(2), Integer.parseInt(command.get(1)), false);
+			} catch (NumberFormatException e) {
+				PrintErr.incorrectPostID();
+			} catch (Exception e) {
+				PrintErr.defaultErr(e);
+			}
+		}
+
+		// Merge
+		case "merge" -> {
+			try {
+				if (command.size() <= 3) {
+					PrintErr.noEnoughArgs();
+					break;
+				}
+				if (!command.contains("-ignore") && !command.contains("-m")) {
+					command.add(null);
+				}
+
+				Command.merge(command.get(1), command.get(2), command.get(3), command.get(4));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		// case "exit" -> exit = true;
+		default -> {
+			System.out.println("wrong command, type >help for commands");
+		}
+		}
 	}
 
 	private static void CLI() {
@@ -35,70 +157,11 @@ public class App {
 
 		while (!exit) {
 			System.out.print("> ");
-			String[] command = scanner.nextLine().split(" ");
-
-			switch (command[0]) {
-			case "help" -> Command.help();
-			case "show" -> Command.show();
-			case "rm" -> Command.remove(command[1]);
-			case "get" -> {
-				try {
-					Parser.getTags(Integer.parseInt(command[1]));
-				} catch (NumberFormatException e) {
-					System.out.println("[ ERROR ] Incorrect post ID");
-				}
+			List<String> command = new ArrayList<>(Arrays.asList(scanner.nextLine().split(" ")));
+			if (command.contains("exit")) {
+				System.exit(0);
 			}
-			// Load
-			case "l" -> {
-				try {
-					Command.load(command[1], Integer.parseInt(command[2]));
-				} catch (NumberFormatException e) {
-					System.out.println("[ ERROR ] Invalid ID");
-				} catch (ArrayIndexOutOfBoundsException e) {
-					System.out.println("[ ERROR ] No enough arguments");
-				}
-			}
-
-			// Get Link
-			case "link" -> {
-				if (Assets.isInt(command[1])) {
-					System.out.println(ApiLinkID + command[1]);
-				} else {
-					System.out.println(ApiLinkID + Command.getID(command[1]));
-				}
-			}
-
-			// Visit Link
-			case "visit" -> {
-				try {
-					if (Assets.isInt(command[1])) {
-						Browser.openWebpage(new URI(PostLinkID + command[1]));
-					} else {
-						Browser.openWebpage(new URI(PostLinkID + Command.getID(command[1])));
-					}
-				} catch (ArrayIndexOutOfBoundsException e) {
-					System.err.println("[ ERROR ] No enough arguments");
-				} catch (Exception e) {
-					System.err.println("[ ERROR ] An error occured " + e);
-				}
-			}
-			case "dwn" -> {
-				try {
-					Command.download(Integer.parseInt(command[1]), command[2]);
-					System.out.println("downloaded");
-					
-					Command.load(command[2], Integer.parseInt(command[1]));
-				} catch (NumberFormatException e) {
-					System.err.println("[ ERROR ] Invalid ID");
-				} catch (ArrayIndexOutOfBoundsException e) {
-					System.err.println("[ ERROR ] No enough arguments");
-				} catch (Exception e) {
-					System.err.println("[ ERROR ] An error occured " + e);
-				}
-			}
-
-			case "exit" -> exit = true;
-			}
+			proc(command);
 		}
 		scanner.close();
 	}

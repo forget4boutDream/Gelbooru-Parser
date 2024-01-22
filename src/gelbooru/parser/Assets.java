@@ -1,12 +1,17 @@
 package gelbooru.parser;
 
+import java.io.File;
 import java.io.FileWriter;
 
 public class Assets {
 
 	public static void createFile() {
+		createFile(App.data);
+	}
+	
+	public static void createFile(File src) {
 		try {
-			FileWriter writer = new FileWriter(App.src);
+			FileWriter writer = new FileWriter(src, false);
 			// Important because JSONObject throws exceptions
 			writer.write("{}");
 			writer.flush();
@@ -17,7 +22,7 @@ public class Assets {
 	}
 	
 	/**
-	 * @return boolean is String an int value
+	 * @return boolean, is String an int value
 	 * @param str - String value that will be checked
 	 * 
 	 * New version @since v1.3
