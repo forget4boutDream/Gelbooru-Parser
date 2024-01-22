@@ -36,6 +36,10 @@ public class Command {
 		System.out.println("link  [id/key]          - get link with id or key in data.json");
 		System.out.println("visit [id/key]          - visit link using a default browser");
 		System.out.println("dwn   [id] [fileName]   - download image and save tags");
+		System.out.println("path                    - get data.json file path");
+		System.out.println("clear                   - clear data.json");
+		System.out.println("merge [f1] [f2] [f3]    - merge 2 data.json");
+		System.out.println("     (NOTE: Beta feature, merge only if there no conflicts)");
 		System.out.println("exit                    - exit program (CLI mode)");
 		
 		
